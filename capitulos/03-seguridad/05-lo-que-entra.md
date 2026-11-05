@@ -23,6 +23,24 @@ directamente a tu servidor con lo que quiera.
 - **Mensajes de error limpios**: qué campo está mal y por qué, sin rutas de archivos, nombres de
   tablas ni trazas del código.
 
+**Para quien quiera ver código** (Python con Pydantic):
+
+```python
+MAX_NAME_LENGTH = 100
+MAX_MESSAGE_LENGTH = 2000
+
+
+class ContactMessage(BaseModel):
+    # Un campo que no está aquí da error en vez de ignorarse.
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = Field(min_length=1, max_length=MAX_NAME_LENGTH)
+    email: EmailStr
+    message: str = Field(min_length=1, max_length=MAX_MESSAGE_LENGTH)
+```
+
+> **🧱 Fundamentos:** F11 Datos en la frontera · F1 Datos y tipos
+
 ### Cómo comprobarlo
 
 Con `curl` o con una herramienta como Bruno o Postman, envía a cada formulario: campos de más, textos
@@ -48,11 +66,13 @@ confunde.
 
 ```python
 # MAL: el texto del usuario pasa a formar parte de la orden
-cursor.execute(f"SELECT * FROM usuarios WHERE correo = '{correo}'")
+cursor.execute(f"SELECT * FROM users WHERE email = '{email}'")
 
 # BIEN: la orden lleva un hueco y el valor va aparte
-cursor.execute("SELECT * FROM usuarios WHERE correo = %s", (correo,))
+cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
 ```
+
+> **🧱 Fundamentos:** F13 Persistencia · F11 Datos en la frontera
 
 Los ORM (SQLAlchemy, Prisma, Django ORM, Hibernate…) parametrizan solos **mientras no construyas
 texto a mano**. El riesgo vuelve en cuanto aparece una consulta «en crudo» montada con texto.
@@ -96,6 +116,37 @@ herramientas.
 | Imágenes reprocesadas | Volver a generar la imagen elimina contenido oculto y metadatos (por ejemplo, la ubicación GPS de una foto) |
 | Antivirus | Si el personal va a abrir lo que suben los clientes |
 | Cupos | Número de subidas por usuario y por hora |
+
+**Para quien quiera ver código.** El tipo se decide por los primeros bytes, con una tabla:
+
+```python
+MEGABYTE = 1024 * 1024
+MAX_UPLOAD_BYTES = 10 * MEGABYTE
+# Primeros bytes de cada tipo permitido. Un tipo nuevo es una línea más.
+SIGNATURE_BY_TYPE = {
+    "pdf": b"%PDF-",
+    "png": b"\x89PNG\r\n\x1a\n",
+    "jpg": b"\xff\xd8\xff",
+}
+
+
+def detect_type(first_bytes: bytes) -> str | None:
+    matches = [
+        kind for kind, signature in SIGNATURE_BY_TYPE.items() if first_bytes.startswith(signature)
+    ]
+    return next(iter(matches), None)
+
+
+def assert_allowed_upload(first_bytes: bytes, size_in_bytes: int) -> str:
+    if size_in_bytes > MAX_UPLOAD_BYTES:
+        raise FileTooLargeError()
+    file_type = detect_type(first_bytes)
+    if file_type is None:
+        raise FileTypeNotAllowedError()
+    return file_type
+```
+
+> **🧱 Fundamentos:** F5 Tablas en lugar de cadenas de if · F6 Listas y recorridos
 
 ### Cómo comprobarlo
 

@@ -21,6 +21,8 @@ clave que alguien dejó en el código.
 | **Fallar cerrado** | Si algo da error, se niega el acceso, nunca se deja pasar «por si acaso» | Si la alarma se estropea, la puerta queda cerrada, no abierta |
 | **Lo más simple posible** | Cada pieza que añades es una puerta más que vigilar | Menos puertas, menos cerraduras que revisar |
 
+> **🧱 Fundamentos:** F11 Datos en la frontera · F12 Cliente, servidor y HTTP
+
 ## La superficie de ataque
 
 Es la suma de **todas las puertas** por las que alguien puede intentar entrar:

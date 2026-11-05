@@ -27,6 +27,8 @@ cuando pasa algo raro.
   borrar**, tampoco por un administrador.
 - **Conservación limitada**: lo que necesites y nada más, según la ley de protección de datos.
 
+> **🧱 Fundamentos:** F7 Errores: lanzar en un sitio, recoger en otro
+
 ### Avisos que conviene tener
 
 | Señal | Puede significar |

@@ -26,6 +26,39 @@ El navegador solo dice **qué** quiere comprar (identificadores y cantidades). E
 precios en su base de datos, calcula descuentos, impuestos y gastos de envío, y crea el pago con ese
 importe. Si el cliente manda un precio, se ignora.
 
+**Para quien quiera ver código.** El servicio del navegador (TypeScript) envía solo qué y cuánto:
+
+```ts
+const CHECKOUT_ERROR = 'No se ha podido iniciar el pago'
+
+// Ni precio ni total: el servidor los calcula con su catálogo.
+const toCheckoutLine = ({ productId, quantity }: CartItem) => ({ productId, quantity })
+
+export const startCheckout = async (items: CartItem[]): Promise<Checkout> => {
+  const response = await fetch(`${API_URL}/checkout`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ lines: items.map(toCheckoutLine) }),
+  })
+  if (!response.ok) throw new Error(CHECKOUT_ERROR)
+  return response.json()
+}
+```
+
+Y el hook que lo usa recoge el error con `attempt()` y guarda un único estado con nombre:
+
+```ts
+const handlePay = async () => {
+  setStatus('redirecting')
+  const { value: checkout, error } = await attempt(startCheckout(cartItems))
+  if (error) return setStatus('error')
+  window.location.assign(checkout.url)
+}
+```
+
+> **🧱 Fundamentos:** F10 Capas y responsabilidades · F7 Errores · F8 Estado con nombre
+
 ### 2. La tarjeta no pasa por tu servidor
 
 Usa la **página de pago alojada** por la pasarela (Stripe Checkout, Redsys, PayPal, Adyen…) o sus
@@ -54,16 +87,51 @@ Un **webhook** es un aviso que la pasarela envía a tu servidor cuando pasa algo
 El webhook es la única ruta de tu web que recibe peticiones que no vienen de tu navegador, así que no
 puede usar la comprobación de `Origin` del apartado 4.4. **Su protección es la firma.**
 
-**Para quien quiera ver código** (Python con la librería oficial de Stripe):
+**Para quien quiera ver código** (Python con la librería oficial de Stripe). Primero, leer el
+aviso solo si la firma es buena:
 
 ```python
-evento = stripe.Webhook.construct_event(
-    payload=cuerpo_original_en_bytes,
-    sig_header=cabeceras["Stripe-Signature"],
-    secret=SECRETO_DEL_WEBHOOK,
-)
-# Si la firma no es válida o el aviso es antiguo, lanza un error y no se abona nada.
+def read_stripe_event(raw_body: bytes, signature: str) -> stripe.Event:
+    secret = settings.stripe_webhook_secret.get_secret_value()
+    # construct_event comprueba la firma y rechaza los avisos de más de 5 minutos.
+    outcome = attempt(
+        lambda: stripe.Webhook.construct_event(raw_body, signature, secret),
+        stripe.SignatureVerificationError,
+        ValueError,
+    )
+    if outcome.error:
+        raise InvalidWebhookError()  # 400: sin firma válida no se abona nada
+    return outcome.value
 ```
+
+Después, procesar cada evento una sola vez. Lo que hay que hacer con cada tipo está en una tabla:
+
+```python
+HANDLER_BY_EVENT_TYPE = {
+    "checkout.session.completed": credit_completed_payment,
+    "charge.refunded": register_refund,
+    "charge.dispute.created": freeze_disputed_account,
+}
+
+
+def apply_event(session: Session, event: stripe.Event) -> None:
+    handler = HANDLER_BY_EVENT_TYPE.get(event.type)
+    if handler is None:
+        return
+    handler(session, event)
+
+
+def process_event_once(session: Session, event: stripe.Event) -> None:
+    if was_already_processed(session, event.id):
+        return
+    apply_event(session, event)
+    # event_id es único en la base: si dos copias llegan a la vez, la segunda falla al
+    # guardar y su transacción se deshace entera, abono incluido.
+    session.add(ProcessedEvent(event_id=event.id))
+    session.commit()
+```
+
+> **🧱 Fundamentos:** F5 Tablas en lugar de cadenas de if · F7 Errores · F13 Persistencia: transacciones
 
 ### 4. Reembolsos y disputas
 

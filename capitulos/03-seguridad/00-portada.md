@@ -1,6 +1,6 @@
 <div class="portada">
 <p class="obra">LIBRO WEB 2026</p>
-<h1 class="titulo-capitulo">Capítulo 1<br>Seguridad</h1>
+<h1 class="titulo-capitulo">Capítulo 3<br>Seguridad</h1>
 <p class="subtitulo">Lo que hay que tener en cuenta para que una web no sea la puerta de entrada de nadie</p>
 <p class="autoria">Fernando del Río · Versión 0.1 · Noviembre de 2026<br>
 Licencia CC BY-NC 4.0: puedes copiarlo, compartirlo y adaptarlo citando al autor, sin uso comercial.</p>
@@ -15,8 +15,31 @@ necesidad de ser experto en seguridad. Si estás empezando a programar, si deleg
 una IA y necesitas saber si lo que te entrega está bien, o si tienes que hablar con un proveedor y no
 quieres que te la cuelen, este capítulo es para ti.
 
-No hace falta saber programar para seguirlo. Los fragmentos de código son pocos, cortos y opcionales:
+No hace falta saber programar para seguirlo. Los fragmentos de código son cortos y opcionales:
 van marcados como **«Para quien quiera ver código»** y puedes saltártelos.
+
+## Sobre los ejemplos de código
+
+Los ejemplos están en **Python** (servidor) y **TypeScript** (navegador) y siguen las reglas de
+estilo **[readfirst](https://github.com/fernando-delrio/readfirst-code-style)**, pensadas para que
+una persona lea el código sin esfuerzo aunque lo haya escrito una IA. Lo que más vas a notar:
+
+- Los **nombres** de funciones y variables van en inglés y explican qué hacen; los **comentarios**,
+  en castellano y solo para explicar el porqué.
+- **Sin `else`**: se sale pronto con una guarda (`if … return` o `raise`).
+- **Tablas en lugar de cadenas de `if`**: lo que cambia según un valor está en un diccionario.
+- **Los errores se recogen en un solo sitio**, con `attempt()`: envuelve lo que puede fallar y
+  devuelve una caja con `value` o con `error`, y después se decide con una guarda. Lo explica el
+  capítulo 2.
+
+## Los recuadros de fundamentos
+
+Cuando un apartado usa una idea básica de programación, lo indica con un recuadro como este:
+
+> **🧱 Fundamentos:** F4 Guardas y retorno temprano · F11 Datos en la frontera
+
+Cada código (F1, F2…) es un apartado del **capítulo 1, Fundamentos de la programación**. No hace
+falta leerlo antes, pero si un concepto no te suena, ahí está explicado desde cero.
 
 ## Cómo está organizado
 

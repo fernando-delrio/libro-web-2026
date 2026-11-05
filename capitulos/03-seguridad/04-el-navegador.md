@@ -84,6 +84,18 @@ acciones en su nombre o cambiar lo que ve.
 3. **Política de seguridad de contenidos (CSP).** Es la red de seguridad: aunque se cuele un script,
    el navegador no lo ejecuta si no está autorizado.
 
+**Para quien quiera ver código** (React):
+
+```tsx
+// MAL: el texto del usuario se interpreta como HTML
+export const CommentText = ({ comment }: CommentProps) => (
+  <p dangerouslySetInnerHTML={{ __html: comment.text }} />
+)
+
+// BIEN: React escapa el texto, y un <script> se ve como texto
+export const CommentText = ({ comment }: CommentProps) => <p>{comment.text}</p>
+```
+
 ### Una CSP estricta
 
 La recomendación actual es autorizar los scripts con un **nonce** (un valor aleatorio distinto en
@@ -134,6 +146,29 @@ Varias capas; con las dos primeras ya es muy difícil:
    formulario y el servidor comprueba.
 5. **Nunca modificar nada con `GET`.** Un enlace o una imagen pueden lanzar un `GET` sin que el
    usuario haga nada.
+
+**Para quien quiera ver código.** En FastAPI, como dependencia de las rutas que modifican datos:
+
+```python
+SAFE_METHODS = frozenset({"GET", "HEAD", "OPTIONS"})
+JSON_CONTENT_TYPE = "application/json"
+
+
+def content_type_of(request: Request) -> str:
+    raw_content_type = request.headers.get("Content-Type", "")
+    return raw_content_type.partition(";")[0].strip().lower()
+
+
+def require_trusted_request(request: Request) -> None:
+    if request.method in SAFE_METHODS:
+        return
+    if request.headers.get("Origin") not in settings.allowed_origins:
+        raise ForbiddenOriginError()
+    if content_type_of(request) != JSON_CONTENT_TYPE:
+        raise ForbiddenOriginError()
+```
+
+> **🧱 Fundamentos:** F12 Cliente, servidor y HTTP · F4 Guardas y retorno temprano
 
 **Excepción**: los avisos que te envían otros servicios (por ejemplo, la pasarela de pago) no vienen
 de tu web. Se protegen con **firma**, no con `Origin` (apartado 6).

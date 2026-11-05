@@ -22,6 +22,20 @@ repositorio, un compañero, una IA a la que se lo pasas), la llave sale con él.
 - **Una clave distinta por entorno**: desarrollo, pruebas y producción no comparten claves.
 - **Mínimo privilegio también aquí**: si el servicio permite claves con permisos limitados, úsalas.
 
+**Para quien quiera ver código** (Python con `pydantic-settings`):
+
+```python
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", hide_input_in_errors=True)
+
+    # Sin valor por defecto: si falta en el entorno, la aplicación no arranca.
+    # SecretStr se muestra como '**********' en los logs y en los mensajes de error.
+    database_url: SecretStr
+    stripe_secret_key: SecretStr
+```
+
+> **🧱 Fundamentos:** F2 Variables y constantes · F11 Datos en la frontera
+
 ### El navegador no guarda secretos
 
 **Todo lo que llega al navegador es público.** El código JavaScript de tu web se puede leer entero
@@ -137,6 +151,8 @@ de desarrolladores y publicando nuevas versiones infectadas con ellas.
 - **Cuidado con los nombres parecidos** (*typosquatting*): `reqeusts` en lugar de `requests`. Copia
   los nombres de la documentación oficial. Esto incluye los paquetes que te sugiere una IA:
   comprueba que existen y son los oficiales.
+
+> **🧱 Fundamentos:** F16 Control de versiones
 
 ## 7.6 Las cuentas que hay alrededor de la web
 

@@ -41,6 +41,31 @@ Además:
   usuario entre, se comprueba con los viejos y se guarda de nuevo con los nuevos.
 - **No programes tu propio algoritmo.** Usa la librería estándar de tu lenguaje o una muy conocida.
 
+**Para quien quiera ver código** (Python con `argon2-cffi`):
+
+```python
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerificationError
+
+# Los valores por defecto de argon2-cffi ya usan Argon2id y superan el mínimo de OWASP.
+password_hasher = PasswordHasher()
+
+
+def hash_password(password: str) -> str:
+    return password_hasher.hash(password)
+
+
+def is_password_correct(password: str, stored_hash: str) -> bool:
+    outcome = attempt(
+        lambda: password_hasher.verify(stored_hash, password),
+        VerificationError,
+        InvalidHashError,
+    )
+    return outcome.error is None
+```
+
+> **🧱 Fundamentos:** F14 Azar, huellas y cifrado · F7 Errores: lanzar en un sitio, recoger en otro
+
 ### Cómo comprobarlo
 
 Mira la tabla de usuarios: ninguna contraseña se puede leer, todas empiezan por el nombre del
@@ -110,6 +135,8 @@ Si alguien la copia, entra como tú hasta que caduque.
 - **Cerrar sesión la anula en el servidor**, no solo borra la cookie del navegador.
 - Al cambiar la contraseña, **se cierran todas las sesiones abiertas**.
 
+> **🧱 Fundamentos:** F14 Azar, huellas y cifrado
+
 ### La cookie de sesión
 
 Las cookies tienen atributos que el navegador obedece. Para una sesión, todos estos:
@@ -152,6 +179,31 @@ inyectado por un atacante.
   contraseña», la misma respuesta exista o no el correo.
 - **Mismo tiempo de respuesta**: si el correo no existe, calcula igualmente un hash falso. Si no, la
   diferencia de milisegundos lo delata.
+
+**Para quien quiera ver código.** El mismo error en los dos casos, y una comparación aunque el correo
+no exista:
+
+```python
+# Huella de una contraseña que nadie usa: se compara aunque el correo no exista,
+# para que el tiempo de respuesta no delate qué correos tienen cuenta.
+DUMMY_HASH = hash_password("this-password-belongs-to-no-account")
+
+
+def stored_hash_of(user: User | None) -> str:
+    if user is None:
+        return DUMMY_HASH
+    return user.password_hash
+
+
+def authenticate(repository: UsersRepository, credentials: Credentials) -> User:
+    user = repository.find_by_email(credentials.email)
+    is_correct = is_password_correct(credentials.password, stored_hash_of(user))
+    if user is None or not is_correct:
+        raise InvalidCredentialsError()
+    return user
+```
+
+> **🧱 Fundamentos:** F4 Guardas y retorno temprano · F3 Funciones
 
 ## 3.6 Enlaces de recuperación y confirmación
 
@@ -201,6 +253,24 @@ número 1 de OWASP (A01) está en la segunda.
 - Las rutas de administración: rol de administrador, segundo factor, fuera de los buscadores
   (`noindex`), sin enlaces desde la web pública y con cada acción anotada en un registro.
 - **Por defecto, nada está permitido.** Cada ruta nueva nace cerrada y se abre a propósito.
+
+**Para quien quiera ver código.** El dueño va **dentro de la consulta**, no en un `if` posterior: así
+no se puede olvidar. Y `account_id` sale siempre de la sesión, nunca de lo que manda el navegador:
+
+```python
+def find_invoice(session: Session, account_id: int, invoice_id: int) -> Invoice:
+    statement = (
+        select(Invoice)
+        .where(Invoice.id == invoice_id)
+        .where(Invoice.account_id == account_id)
+    )
+    invoice = session.scalars(statement).one_or_none()
+    if invoice is None:
+        raise InvoiceNotFoundError()  # 404 también si existe pero es de otra cuenta
+    return invoice
+```
+
+> **🧱 Fundamentos:** F13 Persistencia · F4 Guardas y retorno temprano
 
 ### Cómo comprobarlo
 

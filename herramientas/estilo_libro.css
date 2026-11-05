@@ -83,3 +83,15 @@ pre {
 
 pre code { background: none; padding: 0; }
 strong { font-weight: 650; }
+
+blockquote {
+  margin: 3mm 0 4mm;
+  padding: 2mm 4mm;
+  background: #fdf3ec;
+  border-left: 3px solid #c2410c;
+  border-radius: 2px;
+  font-size: 9pt;
+  break-inside: avoid;
+}
+
+blockquote p { margin: 0; }
