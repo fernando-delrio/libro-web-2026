@@ -1,0 +1,10 @@
+# Archivos intermedios del generador de PDF
+build/
+
+# Python
+__pycache__/
+.venv/
+
+# Sistema
+.DS_Store
+Thumbs.db
