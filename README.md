@@ -111,7 +111,7 @@ El capítulo 1 explica desde cero estas 16 ideas. El resto de capítulos las cit
 ## El código del libro
 
 Los ejemplos están en **Python** (servidor) y **TypeScript** (navegador) y siguen las reglas de estilo
-**[readfirst](https://github.com/fernando-delrio/readfirst-code-style)**: *el código lo leen primero
+**[readfirst](https://github.com/fernando-delrio/readfirst)**: *el código lo leen primero
 las personas*. Es la misma forma de escribir que enseña el capítulo 2:
 
 - nombres que explican qué hace cada cosa (en inglés), y comentarios solo para el porqué (en castellano);

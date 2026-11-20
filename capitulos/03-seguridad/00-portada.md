@@ -21,7 +21,7 @@ van marcados como **«Para quien quiera ver código»** y puedes saltártelos.
 ## Sobre los ejemplos de código
 
 Los ejemplos están en **Python** (servidor) y **TypeScript** (navegador) y siguen las reglas de
-estilo **[readfirst](https://github.com/fernando-delrio/readfirst-code-style)**, pensadas para que
+estilo **[readfirst](https://github.com/fernando-delrio/readfirst)**, pensadas para que
 una persona lea el código sin esfuerzo aunque lo haya escrito una IA. Lo que más vas a notar:
 
 - Los **nombres** de funciones y variables van en inglés y explican qué hacen; los **comentarios**,

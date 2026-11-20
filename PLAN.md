@@ -35,7 +35,7 @@ en el libro**.
 
 **Objetivo:** explicar por qué el código lo leen primero las personas y cómo conseguirlo aunque lo
 escriba una IA. Se apoya en las 20 reglas de
-[readfirst](https://github.com/fernando-delrio/readfirst-code-style), con un antes y un después de
+[readfirst](https://github.com/fernando-delrio/readfirst), con un antes y un después de
 cada una.
 
 1. **Por qué importa**: el código se lee muchas más veces de las que se escribe; la IA escribe
